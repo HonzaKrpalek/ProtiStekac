@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include <driver/i2s.h>
+#include <driver/dac.h>
 #include <cmath>
 
 #define I2S_PORT I2S_NUM_0
 #define SAMPLE_RATE 100000
+#define DAC_CHANNEL I2S_DAC_CHANNEL_RIGHT_EN  // GPIO25
 
 // Chirp parametry
 const float FREQ_START = 22000.0;
@@ -37,11 +39,11 @@ void generateChirp()
 void setupI2S()
 {
   i2s_config_t i2s_config = {
-    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
+    .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN),
     .sample_rate = SAMPLE_RATE,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
     .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
-    .communication_format = I2S_COMM_FORMAT_I2S_MSB,
+    .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S_MSB),
     .intr_alloc_flags = 0,
     .dma_buf_count = 4,
     .dma_buf_len = 256,
@@ -50,6 +52,7 @@ void setupI2S()
   };
 
   i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
+  i2s_set_dac_mode(DAC_CHANNEL);
 }
 
 void setup()
